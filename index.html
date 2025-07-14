@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Car Portfolio - Interactive WebGL Experience</title>
+    <meta name="description" content="Drive through my portfolio in 3D! An interactive WebGL experience showcasing projects, skills, and creativity.">
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div class="loading-container">
+        <div class="loading-car">
+          <div class="car-body"></div>
+          <div class="car-wheel wheel-1"></div>
+          <div class="car-wheel wheel-2"></div>
+        </div>
+        <div class="loading-text">Loading Portfolio...</div>
+        <div class="loading-bar">
+          <div class="loading-progress"></div>
+        </div>
+        <div class="loading-percentage">0%</div>
+      </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- UI Overlay -->
+    <div id="ui-overlay">
+      <!-- Controls Info -->
+      <div class="controls-info">
+        <div class="control-item">
+          <span class="key">WASD</span>
+          <span class="desc">Drive</span>
+        </div>
+        <div class="control-item">
+          <span class="key">Mouse</span>
+          <span class="desc">Look Around</span>
+        </div>
+        <div class="control-item">
+          <span class="key">Space</span>
+          <span class="desc">Brake</span>
+        </div>
+      </div>
+
+      <!-- Minimap -->
+      <div class="minimap">
+        <canvas id="minimap-canvas"></canvas>
+        <div class="minimap-car"></div>
+      </div>
+
+      <!-- Speed Indicator -->
+      <div class="speed-indicator">
+        <div class="speed-needle"></div>
+        <div class="speed-text">0 km/h</div>
+      </div>
+
+      <!-- Zone Info -->
+      <div class="zone-info" id="zone-info">
+        <h3 id="zone-title">Welcome!</h3>
+        <p id="zone-description">Drive around to explore different areas</p>
+        <button id="zone-action" style="display: none;">Explore</button>
+      </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="project-gallery" id="project-gallery">
+          <!-- Projects will be populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="about-content">
+          <h2>About Me</h2>
+          <div class="about-text">
+            <p>Welcome to my interactive 3D portfolio! I'm a creative developer passionate about WebGL, Three.js, and immersive web experiences.</p>
+            <div class="skills">
+              <h3>Skills</h3>
+              <div class="skill-tags">
+                <span class="skill">Three.js</span>
+                <span class="skill">WebGL</span>
+                <span class="skill">JavaScript</span>
+                <span class="skill">GLSL</span>
+                <span class="skill">Cannon.js</span>
+                <span class="skill">GSAP</span>
+                <span class="skill">Blender</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="contact-content">
+          <h2>Get In Touch</h2>
+          <form class="contact-form" id="contact-form">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Send Message</button>
+          </form>
+          <div class="social-links">
+            <a href="#" class="social-link">GitHub</a>
+            <a href="#" class="social-link">LinkedIn</a>
+            <a href="#" class="social-link">Twitter</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+    <script src="/src/fallback.js"></script>
+  </body>
+</html>
