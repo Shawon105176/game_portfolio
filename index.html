@@ -4,95 +4,283 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D Car Portfolio - Interactive WebGL Experience</title>
-    <meta name="description" content="Drive through my portfolio in 3D! An interactive WebGL experience showcasing projects, skills, and creativity.">
+    <title>Shawon's 3D Portfolio - Drive Through My Work</title>
+    <meta name="description" content="An interactive 3D portfolio experience inspired by Bruno Simon. Drive around and explore my projects, skills, and creativity in a cyberpunk world.">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
   </head>
   <body>
-    <!-- Loading Screen -->
+    <!-- Bruno Simon Style Loading Screen -->
     <div id="loading-screen">
-      <div class="loading-container">
-        <div class="loading-car">
-          <div class="car-body"></div>
-          <div class="car-wheel wheel-1"></div>
-          <div class="car-wheel wheel-2"></div>
+      <div class="loading-content">
+        <div class="logo-container">
+          <div class="logo-text">SHAWON.DEV</div>
+          <div class="logo-subtitle">Interactive Portfolio</div>
         </div>
-        <div class="loading-text">Loading Portfolio...</div>
-        <div class="loading-bar">
-          <div class="loading-progress"></div>
+        <button id="start-btn">
+          <span class="btn-text">ENTER EXPERIENCE</span>
+          <div class="btn-glow"></div>
+        </button>
+        <div class="loading-tips">
+          <div class="tip active">Use WASD to drive around</div>
+          <div class="tip">Mouse to look around</div>
+          <div class="tip">Hold Shift for speed boost</div>
+          <div class="tip">Explore different zones to see projects</div>
+          <div class="tip">Press R to reset position</div>
+          <div class="tip">Press Space to brake and create sparks</div>
         </div>
-        <div class="loading-percentage">0%</div>
       </div>
+      <div class="loading-particles"></div>
     </div>
 
     <!-- Game Canvas -->
     <canvas id="webgl-canvas"></canvas>
 
-    <!-- UI Overlay -->
+    <!-- Central Message -->
+    <div class="central-message">
+      <h2 class="central-text">USE YOUR<br><span class="highlight">KEYS</span><br>TO MOVE AROUND</h2>
+      <div class="central-arrow">↓</div>
+    </div>
+
+    <!-- Enhanced UI Overlay -->
     <div id="ui-overlay">
       <!-- Controls Info -->
       <div class="controls-info">
-        <div class="control-item">
-          <span class="key">WASD</span>
-          <span class="desc">Drive</span>
-        </div>
-        <div class="control-item">
-          <span class="key">Mouse</span>
-          <span class="desc">Look Around</span>
-        </div>
-        <div class="control-item">
-          <span class="key">Space</span>
-          <span class="desc">Brake</span>
+        <div class="control-group">
+          <div class="control-item">
+            <kbd class="key">W A S D</kbd>
+            <span class="desc">Drive</span>
+          </div>
+          <div class="control-item">
+            <kbd class="key">Mouse</kbd>
+            <span class="desc">Look Around</span>
+          </div>
+          <div class="control-item">
+            <kbd class="key">Space</kbd>
+            <span class="desc">Brake</span>
+          </div>
+          <div class="control-item">
+            <kbd class="key">Shift</kbd>
+            <span class="desc">Boost</span>
+          </div>
+          <div class="control-item">
+            <kbd class="key">R</kbd>
+            <span class="desc">Reset</span>
+          </div>
         </div>
       </div>
 
-      <!-- Minimap -->
+      <!-- Performance Monitor -->
+      <div class="performance-monitor" id="performance-monitor">
+        <div class="fps-counter">FPS: <span id="fps">60</span></div>
+        <div class="gpu-info">WebGL 2.0</div>
+      </div>
+
+      <!-- Enhanced Minimap -->
       <div class="minimap">
+        <div class="minimap-title">LOCATION</div>
         <canvas id="minimap-canvas"></canvas>
         <div class="minimap-car"></div>
-      </div>
-
-      <!-- Speed Indicator -->
-      <div class="speed-indicator">
-        <div class="speed-needle"></div>
-        <div class="speed-text">0 km/h</div>
-      </div>
-
-      <!-- Zone Info -->
-      <div class="zone-info" id="zone-info">
-        <h3 id="zone-title">Welcome!</h3>
-        <p id="zone-description">Drive around to explore different areas</p>
-        <button id="zone-action" style="display: none;">Explore</button>
-      </div>
-    </div>
-
-    <!-- Project Modal -->
-    <div id="project-modal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="project-gallery" id="project-gallery">
-          <!-- Projects will be populated dynamically -->
+        <div class="minimap-zones">
+          <div class="zone-dot projects" data-zone="projects"></div>
+          <div class="zone-dot about" data-zone="about"></div>
+          <div class="zone-dot contact" data-zone="contact"></div>
+          <div class="zone-dot skills" data-zone="skills"></div>
         </div>
       </div>
+
+      <!-- Enhanced Speed Indicator -->
+      <div class="speed-indicator">
+        <div class="speed-gauge">
+          <div class="speed-needle"></div>
+          <div class="speed-marks">
+            <div class="mark" style="--angle: 0deg;">0</div>
+            <div class="mark" style="--angle: 45deg;">25</div>
+            <div class="mark" style="--angle: 90deg;">50</div>
+            <div class="mark" style="--angle: 135deg;">75</div>
+            <div class="mark" style="--angle: 180deg;">100</div>
+          </div>
+        </div>
+        <div class="speed-text"><span id="speed-value">0</span> km/h</div>
+        <div class="speed-label">VELOCITY</div>
+      </div>
+
+      <!-- Enhanced Zone Info -->
+      <div class="zone-info" id="zone-info">
+        <div class="zone-header">
+          <div class="zone-icon" id="zone-icon">🚗</div>
+          <h3 id="zone-title">Welcome to My Portfolio</h3>
+        </div>
+        <p id="zone-description">Drive around to explore different areas and discover my work</p>
+        <button id="zone-action" class="zone-btn" style="display: none;">
+          <span class="btn-text">Explore</span>
+          <div class="btn-glow"></div>
+        </button>
+      </div>
+
+      <!-- Music Control -->
+      <div class="music-control">
+        <button id="music-toggle" class="music-btn">
+          <span class="music-icon">🎵</span>
+          <span class="music-text">Music</span>
+        </button>
+      </div>
     </div>
 
-    <!-- About Modal -->
-    <div id="about-modal" class="modal">
+    <!-- HUD Elements -->
+    <div class="hud-container">
+        <!-- FPS Counter -->
+        <div id="fps" class="fps-counter">FPS: 60</div>
+        
+        <!-- Speed Indicator -->
+        <div class="speed-indicator">
+            <div class="speed-gauge">
+                <div class="speed-needle"></div>
+            </div>
+            <div id="speed-value">0</div>
+            <div class="speed-unit">KM/H</div>
+        </div>
+        
+        <!-- Boost Cooldown -->
+        <div class="boost-cooldown"></div>
+        
+        <!-- Music Toggle -->
+        <div id="music-toggle" class="music-toggle">
+            <span class="music-icon">🎵</span>
+            <span class="music-text">ON</span>
+        </div>
+        
+        <!-- Minimap -->
+        <div class="minimap">
+            <canvas id="minimap-canvas"></canvas>
+            <div class="minimap-car"></div>
+            <div class="minimap-label">LOCATION</div>
+        </div>
+    </div>
+
+    <!-- Enhanced Project Modal -->
+    <div id="project-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="about-content">
-          <h2>About Me</h2>
-          <div class="about-text">
-            <p>Welcome to my interactive 3D portfolio! I'm a creative developer passionate about WebGL, Three.js, and immersive web experiences.</p>
-            <div class="skills">
-              <h3>Skills</h3>
-              <div class="skill-tags">
-                <span class="skill">Three.js</span>
-                <span class="skill">WebGL</span>
-                <span class="skill">JavaScript</span>
-                <span class="skill">GLSL</span>
-                <span class="skill">Cannon.js</span>
-                <span class="skill">GSAP</span>
-                <span class="skill">Blender</span>
+        <div class="modal-header">
+          <h2 class="modal-title">My Projects</h2>
+          <button class="close" aria-label="Close">&times;</button>
+        </div>
+        <div class="project-gallery" id="project-gallery">
+          <div class="project-card" data-project="0">
+            <div class="project-image">
+              <div class="project-placeholder">🚀</div>
+            </div>
+            <div class="project-info">
+              <h3>3D Portfolio Experience</h3>
+              <p>Interactive WebGL portfolio inspired by Bruno Simon, built with Three.js and Cannon.js physics</p>
+              <div class="project-tech">
+                <span class="tech-tag">Three.js</span>
+                <span class="tech-tag">WebGL</span>
+                <span class="tech-tag">Cannon.js</span>
+                <span class="tech-tag">GSAP</span>
+              </div>
+              <div class="project-links">
+                <a href="#" class="project-link live">Live Demo</a>
+                <a href="#" class="project-link code">Source Code</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="project-card" data-project="1">
+            <div class="project-image">
+              <div class="project-placeholder">🌐</div>
+            </div>
+            <div class="project-info">
+              <h3>React Dashboard</h3>
+              <p>Modern admin dashboard with real-time data visualization and responsive design</p>
+              <div class="project-tech">
+                <span class="tech-tag">React</span>
+                <span class="tech-tag">Chart.js</span>
+                <span class="tech-tag">Node.js</span>
+                <span class="tech-tag">MongoDB</span>
+              </div>
+              <div class="project-links">
+                <a href="#" class="project-link live">Live Demo</a>
+                <a href="#" class="project-link code">Source Code</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="project-card" data-project="2">
+            <div class="project-image">
+              <div class="project-placeholder">🎮</div>
+            </div>
+            <div class="project-info">
+              <h3>WebGL Game Engine</h3>
+              <p>Custom 2D/3D game engine with physics, animations, and particle systems</p>
+              <div class="project-tech">
+                <span class="tech-tag">WebGL</span>
+                <span class="tech-tag">JavaScript</span>
+                <span class="tech-tag">GLSL</span>
+                <span class="tech-tag">Web Audio</span>
+              </div>
+              <div class="project-links">
+                <a href="#" class="project-link live">Live Demo</a>
+                <a href="#" class="project-link code">Source Code</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="project-card" data-project="3">
+            <div class="project-image">
+              <div class="project-placeholder">🌟</div>
+            </div>
+            <div class="project-info">
+              <h3>AI-Powered Chat App</h3>
+              <p>Real-time chat application with AI assistance, built with modern web technologies</p>
+              <div class="project-tech">
+                <span class="tech-tag">Vue.js</span>
+                <span class="tech-tag">Socket.io</span>
+                <span class="tech-tag">OpenAI API</span>
+                <span class="tech-tag">Firebase</span>
+              </div>
+              <div class="project-links">
+                <a href="#" class="project-link live">Live Demo</a>
+                <a href="#" class="project-link code">Source Code</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="project-card" data-project="4">
+            <div class="project-image">
+              <div class="project-placeholder">📱</div>
+            </div>
+            <div class="project-info">
+              <h3>Mobile E-Commerce App</h3>
+              <p>Cross-platform mobile app for e-commerce with payment integration and real-time updates</p>
+              <div class="project-tech">
+                <span class="tech-tag">React Native</span>
+                <span class="tech-tag">Redux</span>
+                <span class="tech-tag">Stripe API</span>
+                <span class="tech-tag">PostgreSQL</span>
+              </div>
+              <div class="project-links">
+                <a href="#" class="project-link live">Live Demo</a>
+                <a href="#" class="project-link code">Source Code</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="project-card" data-project="5">
+            <div class="project-image">
+              <div class="project-placeholder">🎨</div>
+            </div>
+            <div class="project-info">
+              <h3>3D Art Gallery</h3>
+              <p>Virtual art gallery with VR support, showcasing digital artworks in immersive 3D space</p>
+              <div class="project-tech">
+                <span class="tech-tag">A-Frame</span>
+                <span class="tech-tag">WebXR</span>
+                <span class="tech-tag">Blender</span>
+                <span class="tech-tag">AWS S3</span>
+              </div>
+              <div class="project-links">
+                <a href="#" class="project-link live">Live Demo</a>
+                <a href="#" class="project-link code">Source Code</a>
               </div>
             </div>
           </div>
@@ -100,37 +288,422 @@
       </div>
     </div>
 
-    <!-- Contact Modal -->
-    <div id="contact-modal" class="modal">
+    <!-- Enhanced About Modal -->
+    <div id="about-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="contact-content">
-          <h2>Get In Touch</h2>
-          <form class="contact-form" id="contact-form">
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" name="name" required>
+        <div class="modal-header">
+          <h2 class="modal-title">About Me</h2>
+          <button class="close" aria-label="Close">&times;</button>
+        </div>
+        <div class="about-content">
+          <div class="about-intro">
+            <div class="about-avatar">
+              <div class="avatar-placeholder">👨‍💻</div>
+              <div class="avatar-glow"></div>
             </div>
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" required>
+            <div class="about-text">
+              <h3>Creative Developer & 3D Enthusiast</h3>
+              <p>Welcome to my interactive 3D portfolio! I'm a passionate full-stack developer who loves creating immersive web experiences. Inspired by pioneers like Bruno Simon, I combine cutting-edge web technologies with creative design to build engaging digital experiences.</p>
+              
+              <div class="about-stats">
+                <div class="stat">
+                  <div class="stat-number">3+</div>
+                  <div class="stat-label">Years Experience</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-number">50+</div>
+                  <div class="stat-label">Projects Completed</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-number">100%</div>
+                  <div class="stat-label">Passion Driven</div>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" rows="5" required></textarea>
+          </div>
+          
+          <div class="skills-section">
+            <h3>Technical Skills</h3>
+            <div class="skill-categories">
+              <div class="skill-category">
+                <h4>Frontend</h4>
+                <div class="skill-tags">
+                  <span class="skill-tag expert">Three.js</span>
+                  <span class="skill-tag expert">React</span>
+                  <span class="skill-tag expert">JavaScript</span>
+                  <span class="skill-tag advanced">TypeScript</span>
+                  <span class="skill-tag advanced">WebGL</span>
+                  <span class="skill-tag intermediate">GLSL</span>
+                </div>
+              </div>
+              
+              <div class="skill-category">
+                <h4>Backend & Tools</h4>
+                <div class="skill-tags">
+                  <span class="skill-tag expert">Node.js</span>
+                  <span class="skill-tag advanced">Python</span>
+                  <span class="skill-tag advanced">MongoDB</span>
+                  <span class="skill-tag intermediate">Docker</span>
+                  <span class="skill-tag expert">Git</span>
+                  <span class="skill-tag advanced">Blender</span>
+                </div>
+              </div>
+              
+              <div class="skill-category">
+                <h4>Libraries & Frameworks</h4>
+                <div class="skill-tags">
+                  <span class="skill-tag expert">GSAP</span>
+                  <span class="skill-tag advanced">Cannon.js</span>
+                  <span class="skill-tag expert">Express</span>
+                  <span class="skill-tag advanced">Next.js</span>
+                  <span class="skill-tag intermediate">TensorFlow.js</span>
+                </div>
+              </div>
             </div>
-            <button type="submit" class="submit-btn">Send Message</button>
-          </form>
-          <div class="social-links">
-            <a href="#" class="social-link">GitHub</a>
-            <a href="#" class="social-link">LinkedIn</a>
-            <a href="#" class="social-link">Twitter</a>
+          </div>
+          
+          <div class="journey-section">
+            <h3>My Journey</h3>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-year">2024</div>
+                <div class="timeline-content">
+                  <h4>3D Web Developer</h4>
+                  <p>Specialized in creating immersive 3D web experiences and interactive portfolios</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-year">2023</div>
+                <div class="timeline-content">
+                  <h4>Full Stack Developer</h4>
+                  <p>Built modern web applications with React, Node.js, and cloud technologies</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-year">2022</div>
+                <div class="timeline-content">
+                  <h4>Started Web Development</h4>
+                  <p>Began my journey into web development and discovered my passion for creative coding</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Enhanced Contact Modal -->
+    <div id="contact-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Get In Touch</h2>
+          <button class="close" aria-label="Close">&times;</button>
+        </div>
+        <div class="contact-content">
+          <div class="contact-intro">
+            <p>Ready to collaborate on something amazing? Let's create the next generation of web experiences together!</p>
+          </div>
+          
+          <form class="contact-form" id="contact-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" required placeholder="Your name">
+                <div class="input-glow"></div>
+              </div>
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                <div class="input-glow"></div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="subject">Subject</label>
+              <input type="text" id="subject" name="subject" placeholder="What's this about?">
+              <div class="input-glow"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="message">Message *</label>
+              <textarea id="message" name="message" rows="6" required placeholder="Tell me about your project or just say hello!"></textarea>
+              <div class="input-glow"></div>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+              <span class="btn-text">Send Message</span>
+              <div class="btn-glow"></div>
+            </button>
+          </form>
+          
+          <div class="contact-divider">
+            <span>or connect with me</span>
+          </div>
+          
+          <div class="social-links">
+            <a href="https://github.com/yourusername" class="social-link github" target="_blank" rel="noopener">
+              <span class="social-icon">🐙</span>
+              <span class="social-text">GitHub</span>
+            </a>
+            <a href="https://linkedin.com/in/yourusername" class="social-link linkedin" target="_blank" rel="noopener">
+              <span class="social-icon">💼</span>
+              <span class="social-text">LinkedIn</span>
+            </a>
+            <a href="https://twitter.com/yourusername" class="social-link twitter" target="_blank" rel="noopener">
+              <span class="social-icon">🐦</span>
+              <span class="social-text">Twitter</span>
+            </a>
+            <a href="mailto:your.email@example.com" class="social-link email">
+              <span class="social-icon">📧</span>
+              <span class="social-text">Email</span>
+            </a>
+          </div>
+          
+          <div class="contact-info">
+            <div class="info-item">
+              <span class="info-label">Location:</span>
+              <span class="info-value">Your City, Country</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Available for:</span>
+              <span class="info-value">Freelance & Full-time</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Response time:</span>
+              <span class="info-value">Within 24 hours</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resource Modal -->
+    <div id="resource-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="resource-title">Resource Title</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="resource-description" class="description">
+                    Resource description goes here.
+                </div>
+                <div class="resource-list">
+                    <h3>Available Resources:</h3>
+                    <ul id="resource-items">
+                        <!-- Items will be populated by JavaScript -->
+                    </ul>
+                </div>
+                <div class="resource-footer">
+                    <div class="tip">
+                        <i class="tip-icon">💡</i>
+                        <span>Click on any resource to learn more</span>
+                    </div>
+                    <button id="explore-all-btn" class="action-btn">Explore All Resources</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
     <script src="/src/fallback.js"></script>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at var(--bg-x,60%) var(--bg-y,40%), #ffb76b 0%, #ff7c2a 100%);
+      z-index: 9999;
+      transition: opacity 0.6s cubic-bezier(.77,0,.18,1);
+      opacity: 1;
+    }
+    #loading-screen.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #start-btn {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-size: 1.5rem;
+      color: #fff;
+      background: transparent;
+      border: 3px solid rgba(255,255,255,0.5);
+      padding: 2rem 4rem;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 32px 0 rgba(255, 124, 42, 0.2);
+      transform: perspective(400px) rotateX(20deg) skewY(-5deg) scale(0.7);
+      opacity: 0;
+      letter-spacing: 2px;
+      outline: none;
+      animation: btn-in 1s cubic-bezier(.77,0,.18,1) forwards, btn-float 2s ease-in-out infinite alternate;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s, opacity 0.5s;
+    }
+    #start-btn:hover {
+      border-color: #fff;
+      box-shadow: 0 12px 40px 0 rgba(255, 124, 42, 0.4);
+      transform: perspective(400px) rotateX(10deg) skewY(-2deg) scale(1.05);
+    }
+    #start-btn.hide {
+      animation: btn-out 0.6s cubic-bezier(.77,0,.18,1) forwards;
+    }
+    @keyframes btn-in {
+      0% { opacity: 0; transform: perspective(400px) rotateX(20deg) skewY(-5deg) scale(0.7); }
+      60% { opacity: 1; transform: perspective(400px) rotateX(10deg) skewY(-2deg) scale(1.1); }
+      100% { opacity: 1; transform: perspective(400px) rotateX(20deg) skewY(-5deg) scale(1); }
+    }
+    @keyframes btn-out {
+      0% { opacity: 1; transform: perspective(400px) rotateX(20deg) skewY(-5deg) scale(1); }
+      100% { opacity: 0; transform: perspective(400px) rotateX(20deg) skewY(-5deg) scale(0.7); }
+    }
+    @keyframes btn-float {
+      0% { transform: perspective(400px) rotateX(20deg) skewY(-5deg) scale(1) translateY(0); }
+      100% { transform: perspective(400px) rotateX(20deg) skewY(-5deg) scale(1) translateY(16px); }
+    }
+  </style>
+  </style>
+  <script>
+    // Enhanced Bruno Simon style loading screen animations
+    let bgX = 60, bgY = 40, dir = 1;
+    
+    function animateBg() {
+      bgX += 0.1 * dir;
+      bgY += 0.07 * dir;
+      if(bgX > 65 || bgX < 55) dir *= -1;
+      
+      const loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.style.setProperty('--bg-x', bgX + '%');
+        loadingScreen.style.setProperty('--bg-y', bgY + '%');
+      }
+      requestAnimationFrame(animateBg);
+    }
+    animateBg();
+
+    // Enhanced button click animation
+    const startBtn = document.getElementById('start-btn');
+    const loadingScreen = document.getElementById('loading-screen');
+    
+    if (startBtn && loadingScreen) {
+      startBtn.onclick = function() {
+        // Add click effect
+        startBtn.style.transform = 'translateY(-5px) scale(0.95)';
+        
+        setTimeout(() => {
+          startBtn.classList.add('hide');
+          
+          setTimeout(() => {
+            loadingScreen.classList.add('hide');
+          }, 600);
+        }, 200);
+      };
+      
+      // Add hover sound effect (if AudioContext is available)
+      startBtn.addEventListener('mouseenter', () => {
+        // Could add hover sound here
+        startBtn.style.transform = 'translateY(-8px) scale(1.05)';
+      });
+      
+      startBtn.addEventListener('mouseleave', () => {
+        startBtn.style.transform = 'translateY(-5px) scale(1)';
+      });
+    }
+
+    // Cycling tips functionality
+    const tips = document.querySelectorAll('.loading-tips .tip');
+    let currentTip = 0;
+    
+    function cycleTips() {
+      if (tips.length > 0) {
+        tips.forEach(tip => tip.classList.remove('active'));
+        tips[currentTip].classList.add('active');
+        currentTip = (currentTip + 1) % tips.length;
+      }
+    }
+    
+    // Start tip cycling
+    cycleTips();
+    setInterval(cycleTips, 3000);
+
+    // Add loading progress simulation
+    let loadProgress = 0;
+    function simulateLoading() {
+      if (loadProgress < 100) {
+        loadProgress += Math.random() * 3;
+        // Could show progress bar here if needed
+        setTimeout(simulateLoading, 50);
+      }
+    }
+    simulateLoading();
+
+    // Add particle movement to loading screen
+    function createFloatingParticles() {
+      const loadingScreen = document.getElementById('loading-screen');
+      if (!loadingScreen) return;
+
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.style.cssText = `
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background: #4ecdc4;
+          border-radius: 50%;
+          pointer-events: none;
+          opacity: 0.6;
+          left: ${Math.random() * 100}%;
+          top: ${Math.random() * 100}%;
+          animation: float ${3 + Math.random() * 4}s ease-in-out infinite;
+          animation-delay: ${Math.random() * 2}s;
+        `;
+        
+        loadingScreen.appendChild(particle);
+      }
+    }
+
+    // Add floating animation CSS
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes float {
+        0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+        25% { transform: translateY(-20px) translateX(10px) scale(1.2); opacity: 1; }
+        50% { transform: translateY(-10px) translateX(-15px) scale(0.8); opacity: 0.8; }
+        75% { transform: translateY(-30px) translateX(5px) scale(1.1); opacity: 0.9; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    createFloatingParticles();
+
+    // Performance monitoring
+    let fps = 0;
+    let lastTime = performance.now();
+    
+    function updateFPS() {
+      const currentTime = performance.now();
+      fps = Math.round(1000 / (currentTime - lastTime));
+      lastTime = currentTime;
+      
+      const fpsCounter = document.getElementById('fps');
+      if (fpsCounter) {
+        fpsCounter.textContent = fps;
+      }
+      
+      requestAnimationFrame(updateFPS);
+    }
+    
+    // Start FPS monitoring after load
+    setTimeout(updateFPS, 2000);
+  </script>
   </body>
 </html>

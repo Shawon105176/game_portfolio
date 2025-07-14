@@ -6,6 +6,7 @@ export class UI {
         this.setupEventListeners()
         this.setupModals()
         this.currentZone = null
+        this.setupResourceInteraction()
     }
 
     setupElements() {
@@ -67,12 +68,13 @@ export class UI {
         this.modals = {
             project: document.getElementById('project-modal'),
             about: document.getElementById('about-modal'),
-            contact: document.getElementById('contact-modal')
+            contact: document.getElementById('contact-modal'),
+            resource: document.getElementById('resource-modal')
         }
 
         // Setup close buttons
         Object.values(this.modals).forEach(modal => {
-            const closeBtn = modal.querySelector('.close')
+            const closeBtn = modal.querySelector('.close-btn')
             closeBtn.addEventListener('click', () => {
                 this.closeModal(modal)
             })
@@ -226,115 +228,111 @@ export class UI {
         })
     }
 
-    handleZoneAction() {
-        switch (this.currentZone) {
-            case 'Projects':
-                this.openModal(this.modals.project)
-                break
-            case 'About':
-                this.openModal(this.modals.about)
-                break
-            case 'Contact':
-                this.openModal(this.modals.contact)
-                break
+    setupResourceInteraction() {
+        // Create interaction indicator element
+        this.interactionIndicator = document.createElement('div')
+        this.interactionIndicator.className = 'interaction-indicator'
+        this.interactionIndicator.innerHTML = `<span class="key">E</span> View Resource`
+        document.body.appendChild(this.interactionIndicator)
+
+        // Keyboard interaction
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'e' || e.key === 'E') {
+                if (this.activeResource) {
+                    this.openResourceModal(this.activeResource)
+                }
+            }
+        })
+
+        // Setup initial resource data
+        this.setupResourceData()
+    }
+
+    setupResourceData() {
+        this.resourcesData = {
+            // Three.js resources
+            'threejs': {
+                title: 'Three.js Learning Resources',
+                description: 'Three.js is a JavaScript library used to create and display animated 3D computer graphics in a web browser using WebGL.',
+                resources: [
+                    { name: 'Three.js Documentation', author: 'Three.js', url: 'https://threejs.org/docs/' },
+                    { name: 'Three.js Fundamentals', author: 'gfxfundamentals.org', url: 'https://threejs.org/manual/' },
+                    { name: 'Discover Three.js', author: 'Lewy Blue', url: 'https://discoverthreejs.com/' },
+                    { name: 'Three.js Journey', author: 'Bruno Simon', url: 'https://threejs-journey.com/' }
+                ]
+            },
+            // Blender resources
+            'blender': {
+                title: 'Blender Learning Resources',
+                description: 'Blender is a free and open-source 3D computer graphics software toolset used for creating animated films, visual effects, 3D models, and more.',
+                resources: [
+                    { name: 'Blender Documentation', author: 'Blender Foundation', url: 'https://docs.blender.org/' },
+                    { name: 'Blender Guru Tutorials', author: 'Andrew Price', url: 'https://www.blenderguru.com/' },
+                    { name: 'Blender Fundamentals', author: 'Blender Foundation', url: 'https://www.youtube.com/playlist?list=PLa1F2ddGya_-UvuAqHAksYnB0qL9yWDO6' }
+                ]
+            },
+            // Maya/3ds Max resources
+            'maya': {
+                title: '3D Modeling Software Resources',
+                description: 'Professional 3D modeling software like Maya and 3ds Max are industry standard tools for creating high-quality 3D assets.',
+                resources: [
+                    { name: 'Autodesk Maya Learning', author: 'Autodesk', url: 'https://area.autodesk.com/tutorials/maya/' },
+                    { name: '3ds Max Learning Center', author: 'Autodesk', url: 'https://area.autodesk.com/tutorials/3ds-max/' },
+                    { name: 'Maya for Beginners', author: 'Flipped Normals', url: 'https://flippednormals.com/downloads/maya-for-beginners/' }
+                ]
+            },
+            // Game Design resources
+            'game': {
+                title: 'Game Design Resources',
+                description: 'Learn about game design principles, mechanics, and how to create engaging interactive experiences.',
+                resources: [
+                    { name: 'Game Programming Patterns', author: 'Robert Nystrom', url: 'https://gameprogrammingpatterns.com/' },
+                    { name: 'The Art of Game Design', author: 'Jesse Schell', url: 'http://artofgamedesign.com/' },
+                    { name: 'Game Developer Resources', author: 'Gamasutra', url: 'https://www.gamedeveloper.com/' }
+                ]
+            }
         }
     }
 
-    openModal(modal) {
-        modal.classList.add('active')
-        modal.style.display = 'flex'
-        
-        // Animate modal content
-        const content = modal.querySelector('.modal-content')
-        gsap.fromTo(content,
-            { scale: 0.8, opacity: 0 },
-            { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.2)" }
-        )
-        
-        // Blur background
-        document.querySelector('#webgl-canvas').style.filter = 'blur(5px)'
+    showResourceNearby(resourceType) {
+        this.activeResource = resourceType
+        this.interactionIndicator.classList.add('active')
     }
 
-    closeModal(modal) {
-        const content = modal.querySelector('.modal-content')
+    hideResourceNearby() {
+        this.activeResource = null
+        this.interactionIndicator.classList.remove('active')
+    }
+
+    openResourceModal(resourceType) {
+        const resourceData = this.resourcesData[resourceType]
+        if (!resourceData) return
         
-        gsap.to(content, {
-            scale: 0.8,
-            opacity: 0,
-            duration: 0.3,
-            ease: "power2.in",
-            onComplete: () => {
-                modal.classList.remove('active')
-                modal.style.display = 'none'
-            }
+        const modal = this.modals.resource
+        const modalTitle = modal.querySelector('.modal-title')
+        const modalDescription = modal.querySelector('.description')
+        const resourceList = modal.querySelector('.resource-list ul')
+        
+        // Set title and description
+        modalTitle.textContent = resourceData.title
+        modalDescription.textContent = resourceData.description
+        
+        // Clear and populate resource list
+        resourceList.innerHTML = ''
+        resourceData.resources.forEach(resource => {
+            const li = document.createElement('li')
+            li.innerHTML = `
+                <span class="resource-name">${resource.name}</span>
+                <span class="resource-author">by ${resource.author}</span>
+            `
+            li.addEventListener('click', () => {
+                window.open(resource.url, '_blank')
+            })
+            resourceList.appendChild(li)
         })
         
-        // Remove blur
-        document.querySelector('#webgl-canvas').style.filter = 'none'
-    }
-
-    update(car) {
-        if (!car) return
-        
-        this.updateSpeedometer(car.getSpeed())
-        this.updateMinimap(car.getPosition(), car.getRotation())
-    }
-
-    updateSpeedometer(speed) {
-        const kmh = Math.round(speed * 3.6) // Convert m/s to km/h
-        this.elements.speedText.textContent = `${kmh} km/h`
-        
-        // Update needle rotation (0-180 degrees for 0-100 km/h)
-        const needleRotation = Math.min(speed * 1.8, 180)
-        this.elements.speedNeedle.style.transform = `translateX(-50%) rotate(${needleRotation}deg)`
-    }
-
-    updateMinimap(carPosition, carRotation) {
-        const ctx = this.minimapCtx
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, 200, 200)
-        
-        // Draw background
-        ctx.fillStyle = '#2f3542'
-        ctx.fillRect(0, 0, 200, 200)
-        
-        // Draw roads
-        ctx.strokeStyle = '#666'
-        ctx.lineWidth = 8
-        ctx.beginPath()
-        // Main road (vertical)
-        ctx.moveTo(100, 0)
-        ctx.lineTo(100, 200)
-        // Cross road (horizontal)
-        ctx.moveTo(0, 100)
-        ctx.lineTo(200, 100)
-        ctx.stroke()
-        
-        // Draw zones
-        const zones = [
-            { x: -20, z: -20, color: '#FF4757' }, // Projects
-            { x: 20, z: -20, color: '#3742FA' },  // About
-            { x: 0, z: -40, color: '#2ED573' }    // Contact
-        ]
-        
-        zones.forEach(zone => {
-            const x = this.minimapCenter.x + zone.x * this.minimapScale
-            const y = this.minimapCenter.y + zone.z * this.minimapScale
-            
-            ctx.fillStyle = zone.color
-            ctx.beginPath()
-            ctx.arc(x, y, 6, 0, Math.PI * 2)
-            ctx.fill()
-        })
-        
-        // Update car position on minimap
-        const carX = this.minimapCenter.x + carPosition.x * this.minimapScale
-        const carY = this.minimapCenter.y + carPosition.z * this.minimapScale
-        
-        this.elements.minimapCar.style.left = `${carX - 3}px`
-        this.elements.minimapCar.style.top = `${carY - 3}px`
-        this.elements.minimapCar.style.transform = `translate(-50%, -50%) rotate(${carRotation.y}rad)`
+        // Open the modal
+        this.openModal(modal)
     }
 
     showWelcomeMessage() {

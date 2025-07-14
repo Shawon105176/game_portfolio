@@ -25,22 +25,19 @@ export class Environment {
     initialize() {
         this.setLights()
         this.setGround()
-        this.setTerrain()
-        this.setBuildings()
-        this.setTrees()
-        this.setRoads()
         this.setZoneMarkers()
         this.setSkybox()
-        this.setWater()
+        this.setLearningResources() // Add learning resources section
+        this.setupInteractions()
     }
 
     setLights() {
-        // Bruno Simon style lighting setup
-        this.ambientLight = new THREE.AmbientLight('#4ecdc4', 0.6)
+        // Orange theme lighting setup
+        this.ambientLight = new THREE.AmbientLight('#ffb347', 0.8)
         this.scene.add(this.ambientLight)
 
-        // Main directional light (sun)
-        this.directionalLight = new THREE.DirectionalLight('#ff6b9d', 1.2)
+        // Main directional light (warm sun)
+        this.directionalLight = new THREE.DirectionalLight('#ff7f00', 1.5)
         this.directionalLight.position.set(50, 50, 25)
         this.directionalLight.castShadow = true
         this.directionalLight.shadow.mapSize.set(4096, 4096)
@@ -52,13 +49,13 @@ export class Environment {
         this.directionalLight.shadow.camera.bottom = -100
         this.scene.add(this.directionalLight)
 
-        // Secondary light for rim lighting
-        this.rimLight = new THREE.DirectionalLight('#4ecdc4', 0.8)
+        // Secondary light for warm lighting
+        this.rimLight = new THREE.DirectionalLight('#ffd700', 0.6)
         this.rimLight.position.set(-30, 20, -30)
         this.scene.add(this.rimLight)
 
-        // Hemisphere light for natural ambient
-        this.hemisphereLight = new THREE.HemisphereLight('#ff6b9d', '#4ecdc4', 0.4)
+        // Hemisphere light for natural warm ambient
+        this.hemisphereLight = new THREE.HemisphereLight('#ff9500', '#ffb347', 0.5)
         this.scene.add(this.hemisphereLight)
 
         // Add some point lights for accent
@@ -67,22 +64,24 @@ export class Environment {
 
     createAccentLights() {
         const lightPositions = [
-            { x: -20, y: 10, z: -20, color: '#ff6b9d' },
-            { x: 20, y: 8, z: -20, color: '#4ecdc4' },
-            { x: 0, y: 12, z: -40, color: '#45b7d1' }
+            { x: -20, y: 10, z: -20, color: '#ff7f00' },
+            { x: 20, y: 8, z: -20, color: '#ffd700' },
+            { x: 0, y: 12, z: -40, color: '#ffb347' },
+            { x: -10, y: 6, z: 10, color: '#ff9500' },
+            { x: 15, y: 8, z: 15, color: '#ff6b47' }
         ]
 
         lightPositions.forEach(light => {
-            const pointLight = new THREE.PointLight(light.color, 1, 30)
+            const pointLight = new THREE.PointLight(light.color, 1.2, 25)
             pointLight.position.set(light.x, light.y, light.z)
             this.scene.add(pointLight)
 
             // Create light orb visual
-            const orbGeometry = new THREE.SphereGeometry(0.3, 16, 16)
+            const orbGeometry = new THREE.SphereGeometry(0.4, 16, 16)
             const orbMaterial = new THREE.MeshBasicMaterial({
                 color: light.color,
                 emissive: light.color,
-                emissiveIntensity: 0.8
+                emissiveIntensity: 1.0
             })
             
             const orb = new THREE.Mesh(orbGeometry, orbMaterial)
@@ -91,101 +90,149 @@ export class Environment {
 
             // Animate light intensity
             gsap.to(pointLight, {
-                intensity: 0.3,
-                duration: 2,
+                intensity: 0.5,
+                duration: 1.5,
                 yoyo: true,
                 repeat: -1,
                 ease: "power2.inOut"
+            })
+
+            // Add floating animation to orbs
+            gsap.to(orb.position, {
+                y: orb.position.y + 2,
+                duration: 3,
+                yoyo: true,
+                repeat: -1,
+                ease: "sine.inOut"
             })
         })
     }
 
     setGround() {
-        // Bruno Simon style animated ground with hexagonal tiles
-        this.createHexagonalGround()
-        this.createFloatingIslands()
+        // Create flat orange ground like first image
+        this.createFlatGround()
+        this.createScatteredObjects()
+        this.addTextLabels()
     }
 
-    createHexagonalGround() {
-        // Create hexagonal tile pattern like Bruno Simon's portfolio
-        const hexSize = 2
-        const hexCount = 30
-        this.hexagons = []
-
-        for (let x = -hexCount; x <= hexCount; x++) {
-            for (let z = -hexCount; z <= hexCount; z++) {
-                // Skip some hexagons for organic look
-                if (Math.random() > 0.85) continue
-
-                const hexGeometry = new THREE.CylinderGeometry(hexSize, hexSize, 0.2, 6)
-                const hexMaterial = new THREE.MeshStandardMaterial({
-                    color: this.getHexColor(x, z),
-                    roughness: 0.3,
-                    metalness: 0.1,
-                    transparent: true,
-                    opacity: 0.9
-                })
-
-                const hex = new THREE.Mesh(hexGeometry, hexMaterial)
-                
-                // Hexagonal grid positioning
-                const offsetX = x * hexSize * 1.5
-                const offsetZ = z * hexSize * Math.sqrt(3) + (x % 2) * hexSize * Math.sqrt(3) / 2
-                
-                hex.position.set(offsetX, Math.random() * 0.5, offsetZ)
-                hex.receiveShadow = true
-                hex.castShadow = true
-                
-                this.scene.add(hex)
-                this.hexagons.push({
-                    mesh: hex,
-                    originalY: hex.position.y,
-                    delay: Math.random() * 2
-                })
-
-                // Add subtle floating animation
-                gsap.to(hex.position, {
-                    y: hex.position.y + 0.3,
-                    duration: 2 + Math.random(),
-                    delay: Math.random() * 2,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: "power2.inOut"
-                })
-
-                // Add rotation animation
-                gsap.to(hex.rotation, {
-                    y: Math.PI * 2,
-                    duration: 10 + Math.random() * 5,
-                    repeat: -1,
-                    ease: "none"
-                })
-            }
-        }
-
-        // Create main ground plane
+    createFlatGround() {
+        // Large flat ground plane - orange like in the reference
         const groundGeometry = new THREE.PlaneGeometry(400, 400)
         const groundMaterial = new THREE.MeshStandardMaterial({
-            color: '#1a1a2e',
-            roughness: 0.9,
+            color: '#ff7f00',
+            roughness: 0.8,
             metalness: 0.1
         })
+        
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial)
+        ground.rotation.x = -Math.PI / 2
+        ground.position.y = 0
+        ground.receiveShadow = true
+        this.scene.add(ground)
 
-        this.ground = new THREE.Mesh(groundGeometry, groundMaterial)
-        this.ground.rotation.x = -Math.PI / 2
-        this.ground.position.y = -1
-        this.ground.receiveShadow = true
-        this.scene.add(this.ground)
-
-        // Physics ground
+        // Add physics ground
         const groundShape = new CANNON.Plane()
-        this.groundBody = new CANNON.Body({ 
-            mass: 0,
-            material: this.world.groundMaterial 
+        const groundBody = new CANNON.Body({ mass: 0 })
+        groundBody.addShape(groundShape)
+        groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+        this.world.instance.addBody(groundBody)
+    }
+
+    createScatteredObjects() {
+        // Create scattered objects like in the first image
+        const objectTypes = [
+            { type: 'box', size: [2, 3, 2], color: '#90ee90' },      // Green boxes (trees)
+            { type: 'box', size: [1, 1, 1], color: '#ffffff' },      // White cubes
+            { type: 'box', size: [4, 0.5, 4], color: '#ffffff' },    // White platforms
+            { type: 'cylinder', size: [0.1, 4, 0.1], color: '#8b4513' }, // Flagpoles
+            { type: 'box', size: [1.5, 1.5, 1.5], color: '#dda0dd' } // Purple boxes
+        ]
+
+        // Create grid-like arrangement like in the first image
+        const positions = [
+            // Left side objects
+            { x: -20, z: -15 }, { x: -25, z: -10 }, { x: -15, z: -20 },
+            { x: -30, z: -5 }, { x: -18, z: -8 }, { x: -22, z: -18 },
+            
+            // Center area (keep clear for driving)
+            { x: -5, z: -15 }, { x: 5, z: -12 }, { x: -3, z: -8 },
+            
+            // Right side objects  
+            { x: 15, z: -10 }, { x: 20, z: -15 }, { x: 25, z: -8 },
+            { x: 18, z: -20 }, { x: 22, z: -5 }, { x: 30, z: -12 },
+            
+            // Background objects
+            { x: -10, z: -25 }, { x: 0, z: -30 }, { x: 10, z: -28 },
+            { x: -20, z: -30 }, { x: 20, z: -32 }
+        ]
+
+        positions.forEach((pos, index) => {
+            const objectData = objectTypes[index % objectTypes.length]
+            let geometry, mesh
+
+            switch (objectData.type) {
+                case 'box':
+                    geometry = new THREE.BoxGeometry(...objectData.size)
+                    break
+                case 'cylinder':
+                    geometry = new THREE.CylinderGeometry(objectData.size[0], objectData.size[0], objectData.size[1], 8)
+                    break
+                default:
+                    geometry = new THREE.BoxGeometry(1, 1, 1)
+            }
+
+            const material = new THREE.MeshStandardMaterial({
+                color: objectData.color,
+                roughness: 0.4,
+                metalness: 0.1
+            })
+
+            mesh = new THREE.Mesh(geometry, material)
+            mesh.position.set(pos.x, objectData.size[1] / 2, pos.z)
+            mesh.castShadow = true
+            mesh.receiveShadow = true
+            this.scene.add(mesh)
+
+            // Add physics body
+            let shape
+            if (objectData.type === 'box') {
+                shape = new CANNON.Box(new CANNON.Vec3(...objectData.size.map(s => s / 2)))
+            } else if (objectData.type === 'cylinder') {
+                shape = new CANNON.Cylinder(objectData.size[0], objectData.size[0], objectData.size[1], 8)
+            }
+
+            const body = new CANNON.Body({ mass: 0 })
+            body.addShape(shape)
+            body.position.set(pos.x, objectData.size[1] / 2, pos.z)
+            this.world.instance.addBody(body)
+
+            // Add some random rotation
+            mesh.rotation.y = Math.random() * Math.PI * 2
         })
-        this.groundBody.addShape(groundShape)
-        this.groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
-        this.world.instance.addBody(this.groundBody)
+    }
+
+    addTextLabels() {
+        // Add text on the ground like in the first image
+        const textData = [
+            { text: 'ACTIVITIES', position: { x: -25, z: -12 } },
+            { text: 'PLAYGROUND', position: { x: 0, z: -20 } },
+            { text: 'CREATIONS', position: { x: 20, z: -15 } }
+        ]
+
+        textData.forEach(data => {
+            // Create text using simple geometry (since we don't have font loading)
+            const textGeometry = new THREE.PlaneGeometry(8, 2)
+            const textMaterial = new THREE.MeshBasicMaterial({
+                color: '#ffffff',
+                transparent: true,
+                opacity: 0.9
+            })
+            
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial)
+            textMesh.rotation.x = -Math.PI / 2
+            textMesh.position.set(data.position.x, 0.1, data.position.z)
+            this.scene.add(textMesh)
+        })
     }
 
     setTerrain() {
@@ -200,8 +247,9 @@ export class Environment {
         hillPositions.forEach(hill => {
             const hillGeometry = new THREE.SphereGeometry(25, 16, 16)
             const hillMaterial = new THREE.MeshStandardMaterial({
-                color: '#4CAF50',
-                roughness: 0.9
+                color: '#ff8c42',
+                roughness: 0.8,
+                metalness: 0.1
             })
             
             const hillMesh = new THREE.Mesh(hillGeometry, hillMaterial)
@@ -522,9 +570,9 @@ export class Environment {
                 }
             `,
             uniforms: {
-                topColor: { value: new THREE.Color('#ff6b9d') },
-                bottomColor: { value: new THREE.Color('#1a1a2e') },
-                accentColor: { value: new THREE.Color('#4ecdc4') },
+                topColor: { value: new THREE.Color('#ffd700') },
+                bottomColor: { value: new THREE.Color('#ff7f00') },
+                accentColor: { value: new THREE.Color('#ffb347') },
                 time: { value: 0 }
             },
             side: THREE.BackSide
@@ -532,13 +580,20 @@ export class Environment {
 
         this.skybox = new THREE.Mesh(skyGeometry, skyMaterial)
         this.scene.add(this.skybox)
-
-        // Animate skybox
-        const animateSky = () => {
-            skyMaterial.uniforms.time.value = Date.now()
-            requestAnimationFrame(animateSky)
+        
+        // Update the skybox time uniform in animation
+        if (this.experience.time) {
+            this.experience.time.on('tick', () => {
+                skyMaterial.uniforms.time.value = this.experience.time.elapsed
+            })
+        } else {
+            // Fallback animation if time module is not available
+            const animate = () => {
+                skyMaterial.uniforms.time.value = Date.now()
+                requestAnimationFrame(animate)
+            }
+            animate()
         }
-        animateSky()
     }
 
     setWater() {
@@ -586,20 +641,29 @@ export class Environment {
     }
 
     getHexColor(x, z) {
-        // Color variation based on position (Bruno Simon style)
+        // Orange theme color variation based on position
         const distance = Math.sqrt(x * x + z * z)
-        const hue = (distance * 10 + Date.now() * 0.0001) % 360
-        return `hsl(${hue}, 70%, 60%)`
+        const colors = [
+            '#ff7f00', // Primary orange
+            '#ff9500', // Secondary orange  
+            '#ffb347', // Light orange
+            '#ffd700', // Gold yellow
+            '#ff6b47', // Warm red
+            '#ffcc99'  // Cream orange
+        ]
+        
+        const colorIndex = Math.floor((distance * 2 + x + z) % colors.length)
+        return colors[colorIndex]
     }
 
     createFloatingIslands() {
-        // Create floating islands like Bruno Simon's portfolio
+        // Create floating islands with colorful objects like in the reference image
         const islandPositions = [
-            { x: -40, y: 5, z: -40, size: 8 },
-            { x: 40, y: 4, z: -40, size: 6 },
-            { x: 0, y: 6, z: -60, size: 10 },
-            { x: -30, y: 3, z: 30, size: 7 },
-            { x: 35, y: 5, z: 35, size: 9 }
+            { x: -40, y: 5, z: -40, size: 8, color: '#90ee90' },
+            { x: 40, y: 4, z: -40, size: 6, color: '#ffd700' },
+            { x: 0, y: 6, z: -60, size: 10, color: '#ff6b47' },
+            { x: -30, y: 3, z: 30, size: 7, color: '#ffb347' },
+            { x: 35, y: 5, z: 35, size: 9, color: '#ff9500' }
         ]
 
         islandPositions.forEach((island, index) => {
@@ -608,9 +672,9 @@ export class Environment {
             // Main island body
             const islandGeometry = new THREE.SphereGeometry(island.size, 16, 16)
             const islandMaterial = new THREE.MeshStandardMaterial({
-                color: '#4ecdc4',
-                roughness: 0.7,
-                metalness: 0.2
+                color: island.color,
+                roughness: 0.4,
+                metalness: 0.1
             })
             
             const islandMesh = new THREE.Mesh(islandGeometry, islandMaterial)
@@ -619,33 +683,8 @@ export class Environment {
             islandMesh.receiveShadow = true
             islandGroup.add(islandMesh)
 
-            // Add floating crystals on islands
-            for (let i = 0; i < 3; i++) {
-                const crystalGeometry = new THREE.OctahedronGeometry(0.5 + Math.random())
-                const crystalMaterial = new THREE.MeshStandardMaterial({
-                    color: `hsl(${180 + Math.random() * 60}, 80%, 70%)`,
-                    emissive: `hsl(${180 + Math.random() * 60}, 50%, 20%)`,
-                    transparent: true,
-                    opacity: 0.8
-                })
-                
-                const crystal = new THREE.Mesh(crystalGeometry, crystalMaterial)
-                crystal.position.set(
-                    (Math.random() - 0.5) * island.size,
-                    island.size * 0.3 + Math.random() * 2,
-                    (Math.random() - 0.5) * island.size
-                )
-                
-                islandGroup.add(crystal)
-
-                // Rotate crystals
-                gsap.to(crystal.rotation, {
-                    y: Math.PI * 2,
-                    duration: 5 + Math.random() * 3,
-                    repeat: -1,
-                    ease: "none"
-                })
-            }
+            // Add colorful 3D objects like in the reference image
+            this.addIslandObjects(islandGroup, island)
 
             islandGroup.position.set(island.x, island.y, island.z)
             this.scene.add(islandGroup)
@@ -659,13 +698,601 @@ export class Environment {
                 ease: "power2.inOut"
             })
 
-            // Slow rotation
-            gsap.to(islandGroup.rotation, {
-                y: Math.PI * 2,
-                duration: 20 + index * 5,
+            // Add physics body
+            const islandShape = new CANNON.Sphere(island.size)
+            const islandBody = new CANNON.Body({ mass: 0 })
+            islandBody.addShape(islandShape)
+            islandBody.position.set(island.x, island.y, island.z)
+            this.world.instance.addBody(islandBody)
+        })
+    }
+
+    addIslandObjects(islandGroup, island) {
+        // Add various colorful 3D objects
+        const objectTypes = ['cube', 'cylinder', 'cone', 'sphere', 'torus']
+        const objectColors = ['#ff7f00', '#ffd700', '#90ee90', '#ff6b47', '#ffb347', '#87ceeb', '#dda0dd']
+
+        const objectCount = 4 + Math.floor(Math.random() * 3)
+        
+        for (let i = 0; i < objectCount; i++) {
+            const angle = (i / objectCount) * Math.PI * 2
+            const radius = island.size * 0.3 + Math.random() * island.size * 0.4
+            const x = Math.cos(angle) * radius
+            const z = Math.sin(angle) * radius
+            const y = island.size * 0.4 + Math.random() * 3
+
+            const objectType = objectTypes[Math.floor(Math.random() * objectTypes.length)]
+            const objectColor = objectColors[Math.floor(Math.random() * objectColors.length)]
+            
+            let geometry
+            const scale = 0.8 + Math.random() * 1.5
+
+            switch (objectType) {
+                case 'cube':
+                    geometry = new THREE.BoxGeometry(scale, scale, scale)
+                    break
+                case 'cylinder':
+                    geometry = new THREE.CylinderGeometry(scale * 0.5, scale * 0.5, scale * 2, 8)
+                    break
+                case 'cone':
+                    geometry = new THREE.ConeGeometry(scale * 0.5, scale * 2, 8)
+                    break
+                case 'sphere':
+                    geometry = new THREE.SphereGeometry(scale * 0.7, 16, 16)
+                    break
+                case 'torus':
+                    geometry = new THREE.TorusGeometry(scale * 0.5, scale * 0.2, 8, 16)
+                    break
+            }
+
+            const material = new THREE.MeshStandardMaterial({
+                color: objectColor,
+                roughness: 0.3,
+                metalness: 0.2,
+                emissive: objectColor,
+                emissiveIntensity: 0.2
+            })
+
+            const mesh = new THREE.Mesh(geometry, material)
+            mesh.position.set(x, y, z)
+            mesh.rotation.x = Math.random() * Math.PI
+            mesh.rotation.y = Math.random() * Math.PI
+            mesh.rotation.z = Math.random() * Math.PI
+            mesh.castShadow = true
+            mesh.receiveShadow = true
+            
+            islandGroup.add(mesh)
+
+            // Add rotation animation
+            gsap.to(mesh.rotation, {
+                x: mesh.rotation.x + Math.PI * 2,
+                y: mesh.rotation.y + Math.PI * 2,
+                duration: 8 + Math.random() * 5,
                 repeat: -1,
                 ease: "none"
             })
+
+            // Add floating animation
+            gsap.to(mesh.position, {
+                y: y + 1,
+                duration: 3 + Math.random() * 2,
+                yoyo: true,
+                repeat: -1,
+                ease: "sine.inOut"
+            })
+        }
+    }
+
+    setLearningResources() {
+        // Create a central learning resources area
+        const resourceArea = new THREE.Group()
+        
+        // Create a platform for the learning resources
+        const platformGeometry = new THREE.CylinderGeometry(12, 15, 0.5, 8)
+        const platformMaterial = new THREE.MeshStandardMaterial({
+            color: '#ffa500',
+            metalness: 0.3,
+            roughness: 0.4,
+            emissive: '#ff7f00',
+            emissiveIntensity: 0.2
         })
+        
+        const platform = new THREE.Mesh(platformGeometry, platformMaterial)
+        platform.position.set(0, 0.25, -60)
+        platform.receiveShadow = true
+        resourceArea.add(platform)
+        
+        // Add glow effect to platform
+        const glowGeometry = new THREE.CylinderGeometry(12.2, 15.2, 0.4, 8)
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: '#ffd700',
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide
+        })
+        
+        const glow = new THREE.Mesh(glowGeometry, glowMaterial)
+        glow.position.set(0, 0.25, 0)
+        platform.add(glow)
+        
+        // Add animation to glow
+        gsap.to(glowMaterial, {
+            opacity: 0.1,
+            duration: 2,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        })
+        
+        // Create a central hologram-like display
+        const hologramStand = this.createHologramStand(0, 0.5, 0)
+        platform.add(hologramStand)
+        
+        // Add resource categories as floating objects around the platform
+        this.createResourceCategories(platform)
+        
+        // Add title above the platform
+        this.createFloatingText("LEARNING RESOURCES", 0, 6, 0, "#ffffff", 1.2, platform)
+        
+        // Add subtitle
+        this.createFloatingText("INTERACT TO EXPLORE", 0, 4.5, 0, "#ffd700", 0.6, platform)
+        
+        // Add the resource area to the scene
+        resourceArea.position.z = -60
+        this.scene.add(resourceArea)
+        
+        // Store reference for interaction
+        this.resourceArea = resourceArea
+    }
+    
+    createHologramStand(x, y, z) {
+        const standGroup = new THREE.Group()
+        standGroup.position.set(x, y, z)
+        
+        // Base of the stand
+        const baseGeometry = new THREE.CylinderGeometry(1.5, 2, 1, 16)
+        const baseMaterial = new THREE.MeshStandardMaterial({
+            color: '#3a3a3a',
+            metalness: 0.8,
+            roughness: 0.2
+        })
+        
+        const base = new THREE.Mesh(baseGeometry, baseMaterial)
+        base.position.y = 0
+        base.castShadow = true
+        base.receiveShadow = true
+        standGroup.add(base)
+        
+        // Pillar of the stand
+        const pillarGeometry = new THREE.CylinderGeometry(0.5, 0.5, 3, 16)
+        const pillarMaterial = new THREE.MeshStandardMaterial({
+            color: '#5a5a5a',
+            metalness: 0.6,
+            roughness: 0.3
+        })
+        
+        const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial)
+        pillar.position.y = 2
+        pillar.castShadow = true
+        standGroup.add(pillar)
+        
+        // Hologram emitter
+        const emitterGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 16)
+        const emitterMaterial = new THREE.MeshStandardMaterial({
+            color: '#7a7a7a',
+            metalness: 0.9,
+            roughness: 0.1,
+            emissive: '#00aaff',
+            emissiveIntensity: 0.5
+        })
+        
+        const emitter = new THREE.Mesh(emitterGeometry, emitterMaterial)
+        emitter.position.y = 3.6
+        standGroup.add(emitter)
+        
+        // Hologram projection (3D model of Earth/globe)
+        const globeGeometry = new THREE.SphereGeometry(2, 32, 32)
+        const globeMaterial = new THREE.MeshStandardMaterial({
+            color: '#4287f5',
+            transparent: true,
+            opacity: 0.8,
+            emissive: '#4287f5',
+            emissiveIntensity: 0.5,
+            wireframe: true
+        })
+        
+        const globe = new THREE.Mesh(globeGeometry, globeMaterial)
+        globe.position.y = 7
+        standGroup.add(globe)
+        
+        // Add a wireframe sphere overlay
+        const wireGeometry = new THREE.SphereGeometry(2.1, 16, 12)
+        const wireMaterial = new THREE.MeshBasicMaterial({
+            color: '#00aaff',
+            transparent: true,
+            opacity: 0.3,
+            wireframe: true
+        })
+        
+        const wireframe = new THREE.Mesh(wireGeometry, wireMaterial)
+        wireframe.position.y = 7
+        standGroup.add(wireframe)
+        
+        // Add continents/details as noise on the sphere
+        const detailGeometry = new THREE.SphereGeometry(2.05, 32, 32)
+        const detailMaterial = new THREE.MeshBasicMaterial({
+            color: '#ffa500',
+            transparent: true,
+            opacity: 0.5,
+            alphaMap: this.createNoiseTexture()
+        })
+        
+        const details = new THREE.Mesh(detailGeometry, detailMaterial)
+        details.position.y = 7
+        standGroup.add(details)
+        
+        // Add rotation animation
+        gsap.to(globe.rotation, {
+            y: Math.PI * 2,
+            duration: 20,
+            repeat: -1,
+            ease: "none"
+        })
+        
+        gsap.to(wireframe.rotation, {
+            y: -Math.PI * 2,
+            duration: 30,
+            repeat: -1,
+            ease: "none"
+        })
+        
+        // Floating effect for the globe
+        gsap.to(globe.position, {
+            y: 7.3,
+            duration: 4,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        })
+        
+        gsap.to(wireframe.position, {
+            y: 7.2,
+            duration: 3.5,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        })
+        
+        return standGroup
+    }
+    
+    createNoiseTexture() {
+        const canvas = document.createElement('canvas')
+        canvas.width = 256
+        canvas.height = 256
+        const context = canvas.getContext('2d')
+        
+        // Fill with transparent black
+        context.fillStyle = 'rgba(0,0,0,0)'
+        context.fillRect(0, 0, canvas.width, canvas.height)
+        
+        // Add random noise spots
+        for (let i = 0; i < 100; i++) {
+            const x = Math.random() * canvas.width
+            const y = Math.random() * canvas.height
+            const radius = 5 + Math.random() * 20
+            
+            context.beginPath()
+            context.arc(x, y, radius, 0, Math.PI * 2)
+            const alpha = 0.3 + Math.random() * 0.7
+            context.fillStyle = `rgba(255, 255, 255, ${alpha})`
+            context.fill()
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas)
+        return texture
+    }
+    
+    createResourceCategories(platform) {
+        // Define resource categories
+        const categories = [
+            {
+                title: "3D DESIGN GUIDES",
+                description: "Comprehensive guides on environment design",
+                resources: [
+                    { name: "The Complete Guide to 3D Environment Design", author: "3D-Ace Studio" },
+                    { name: "3D Environment Design", author: "Polydin Studio" },
+                    { name: "Realistic 3D Environments: Tips and Tricks", author: "3DFoin" },
+                    { name: "Guide to 3D Environments", author: "Animost" }
+                ],
+                color: "#ff7f00"
+            },
+            {
+                title: "SOFTWARE & TOOLS",
+                description: "Essential 3D software and libraries",
+                resources: [
+                    { name: "Three.js", author: "Ricardo Cabello" },
+                    { name: "Blender", author: "Blender Foundation" },
+                    { name: "Autodesk Maya", author: "Autodesk" },
+                    { name: "3ds Max", author: "Autodesk" }
+                ],
+                color: "#00aaff"
+            },
+            {
+                title: "DESIGN PRINCIPLES",
+                description: "Core concepts of 3D environment creation",
+                resources: [
+                    { name: "Lighting Techniques", author: "Various" },
+                    { name: "Texture Creation", author: "Various" },
+                    { name: "Camera Movement", author: "Various" },
+                    { name: "Particle Effects", author: "Various" }
+                ],
+                color: "#33cc33"
+            },
+            {
+                title: "LEARNING ROADMAP",
+                description: "Structured path to mastering 3D environments",
+                resources: [
+                    { name: "Beginner: 3D Basics", author: "Custom Path" },
+                    { name: "Intermediate: Advanced Techniques", author: "Custom Path" },
+                    { name: "Advanced: Optimization", author: "Custom Path" },
+                    { name: "Expert: Real-time Environments", author: "Custom Path" }
+                ],
+                color: "#cc33cc"
+            }
+        ]
+        
+        // Create floating displays for each category in a circle around the center
+        const radius = 8
+        categories.forEach((category, index) => {
+            const angle = (index / categories.length) * Math.PI * 2
+            const x = Math.sin(angle) * radius
+            const z = Math.cos(angle) * radius
+            
+            // Create a floating display for this category
+            const display = this.createResourceDisplay(category, x, 0, z, platform)
+            
+            // Add floating animation
+            gsap.to(display.position, {
+                y: 1 + 0.5 * Math.sin(index),
+                duration: 3 + index * 0.5,
+                yoyo: true,
+                repeat: -1,
+                ease: "sine.inOut"
+            })
+        })
+    }
+    
+    createResourceDisplay(category, x, y, z, parent) {
+        const displayGroup = new THREE.Group()
+        displayGroup.position.set(x, y + 2, z)
+        
+        // Look at center
+        displayGroup.lookAt(new THREE.Vector3(0, y + 2, 0))
+        
+        // Create backing panel
+        const panelGeometry = new THREE.BoxGeometry(4, 5, 0.1)
+        const panelMaterial = new THREE.MeshStandardMaterial({
+            color: '#2a2a2a',
+            transparent: true,
+            opacity: 0.8,
+            metalness: 0.2,
+            roughness: 0.8
+        })
+        
+        const panel = new THREE.Mesh(panelGeometry, panelMaterial)
+        displayGroup.add(panel)
+        
+        // Add colored border
+        const borderGeometry = new THREE.BoxGeometry(4.2, 5.2, 0.05)
+        const borderMaterial = new THREE.MeshBasicMaterial({
+            color: category.color,
+            transparent: true,
+            opacity: 0.8
+        })
+        
+        const border = new THREE.Mesh(borderGeometry, borderMaterial)
+        border.position.z = -0.03
+        displayGroup.add(border)
+        
+        // Add category title
+        this.createPanelText(category.title, 0, 2, 0.06, "#ffffff", 0.3, displayGroup)
+        
+        // Add category description
+        this.createPanelText(category.description, 0, 1.3, 0.06, "#cccccc", 0.2, displayGroup)
+        
+        // Add resources
+        category.resources.forEach((resource, index) => {
+            const y = 0.5 - index * 0.6
+            this.createPanelText(resource.name, 0, y, 0.06, "#ffffff", 0.15, displayGroup)
+            this.createPanelText(`by ${resource.author}`, 0, y - 0.25, 0.06, "#aaaaaa", 0.12, displayGroup)
+        })
+        
+        // Add resource type to panel for interaction
+        panel.userData = {
+            resourceType: this.getResourceType(category.title)
+        }
+        
+        // Add to interactive objects array
+        this.interactiveObjects.push(panel)
+        
+        // Add interaction indicator
+        const indicatorGeometry = new THREE.SphereGeometry(0.2, 16, 16)
+        const indicatorMaterial = new THREE.MeshBasicMaterial({
+            color: category.color,
+            transparent: true,
+            opacity: 0.8
+        })
+        
+        const indicator = new THREE.Mesh(indicatorGeometry, indicatorMaterial)
+        indicator.position.set(0, -2.2, 0.2)
+        displayGroup.add(indicator)
+        
+        // Add pulse animation to indicator
+        gsap.to(indicator.scale, {
+            x: 1.5,
+            y: 1.5,
+            z: 1.5,
+            duration: 1,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        })
+        
+        parent.add(displayGroup)
+        return displayGroup
+    }
+    
+    getResourceType(title) {
+        const titleLower = title.toLowerCase()
+        if (titleLower.includes('3d design')) return 'threejs'
+        if (titleLower.includes('software')) return 'blender'
+        if (titleLower.includes('design principles')) return 'maya'
+        if (titleLower.includes('roadmap')) return 'game'
+        return 'threejs' // Default
+    }
+
+    setupInteractions() {
+        // Setup interaction raycaster
+        this.raycaster = new THREE.Raycaster()
+        this.mouse = new THREE.Vector2()
+        
+        // Array to store interactive objects
+        this.interactiveObjects = []
+        this.currentIntersect = null
+        
+        // Get UI reference
+        this.ui = this.experience.ui
+        
+        // Setup event listeners
+        window.addEventListener('pointermove', (event) => {
+            this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+            this.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
+        })
+        
+        window.addEventListener('click', () => {
+            if (this.currentIntersect) {
+                const userData = this.currentIntersect.object.userData
+                if (userData.resourceType) {
+                    // Call UI method to open modal
+                    this.ui.openResourceModal(userData.resourceType)
+                }
+            }
+        })
+    }
+
+    // Add this method to check for interactions
+    checkInteractions(camera) {
+        if (!this.raycaster || !this.interactiveObjects.length) return
+        
+        // Update the picking ray with the camera and mouse position
+        this.raycaster.setFromCamera(this.mouse, camera)
+        
+        // Calculate objects intersecting the picking ray
+        const intersects = this.raycaster.intersectObjects(this.interactiveObjects)
+        
+        // Handle hover state
+        if (intersects.length) {
+            if (this.currentIntersect !== intersects[0].object) {
+                this.currentIntersect = intersects[0].object
+                document.body.style.cursor = 'pointer'
+                
+                // Show resource info in UI
+                if (this.ui && this.currentIntersect.userData.resourceType) {
+                    this.ui.showResourceNearby(this.currentIntersect.userData.resourceType)
+                }
+                
+                // Scale up the hovered panel
+                gsap.to(this.currentIntersect.scale, {
+                    x: 1.1,
+                    y: 1.1,
+                    z: 1.1,
+                    duration: 0.3,
+                    ease: "back.out(1.2)"
+                })
+            }
+        } else {
+            if (this.currentIntersect) {
+                // Reset cursor
+                document.body.style.cursor = 'auto'
+                
+                // Hide resource info in UI
+                if (this.ui) {
+                    this.ui.hideResourceNearby()
+                }
+                
+                // Scale down the panel
+                gsap.to(this.currentIntersect.scale, {
+                    x: 1,
+                    y: 1,
+                    z: 1,
+                    duration: 0.3,
+                    ease: "back.out(1.2)"
+                })
+                
+                this.currentIntersect = null
+            }
+        }
+    }
+
+    createPanelText(text, x, y, z, color, size, parent) {
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+        canvas.width = 1024
+        canvas.height = 256
+        
+        context.fillStyle = color
+        context.font = `${size * 100}px Arial`
+        context.textAlign = 'center'
+        context.fillText(text, 512, 128)
+        
+        const texture = new THREE.CanvasTexture(canvas)
+        const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            alphaTest: 0.1
+        })
+        
+        const geometry = new THREE.PlaneGeometry(3.5, size * 10)
+        const mesh = new THREE.Mesh(geometry, material)
+        mesh.position.set(x, y, z)
+        parent.add(mesh)
+        
+        return mesh
+    }
+    
+    createFloatingText(text, x, y, z, color, size, parent) {
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+        canvas.width = 1024
+        canvas.height = 256
+        
+        context.fillStyle = color
+        context.font = `Bold ${size * 100}px Arial`
+        context.textAlign = 'center'
+        context.fillText(text, 512, 128)
+        
+        const texture = new THREE.CanvasTexture(canvas)
+        const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            alphaTest: 0.1
+        })
+        
+        const geometry = new THREE.PlaneGeometry(size * 20, size * 5)
+        const mesh = new THREE.Mesh(geometry, material)
+        mesh.position.set(x, y, z)
+        parent.add(mesh)
+        
+        // Add floating animation
+        gsap.to(mesh.position, {
+            y: y + 0.5,
+            duration: 3,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        })
+        
+        return mesh
     }
 }

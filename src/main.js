@@ -7,8 +7,8 @@ import Stats from 'stats.js'
 import { World } from './World/World.js'
 import { Car } from './World/Car.js'
 import { Environment } from './World/Environment.js'
-import { UI } from './UI/UI.js'
-import { AudioManager } from './Audio/AudioManager.js'
+import { UI } from './UI/EnhancedUI.js'
+import { AudioManager } from './Audio/EnhancedAudioManager.js'
 import { LoadingManager } from './Utils/LoadingManager.js'
 
 class Experience {
@@ -109,71 +109,60 @@ class Experience {
 
     setControls() {
         this.keys = {}
+        this.mousePressed = false
+        this.hasStarted = false
         
-        // Keyboard events
-        window.addEventListener('keydown', (event) => {
-            this.keys[event.code] = true
+        // Key events
+        window.addEventListener('keydown', (e) => {
+            this.keys[e.code] = true
+            
+            // Hide central message on first interaction
+            if (!this.hasStarted) {
+                this.hasStarted = true
+                document.body.classList.add('started')
+            }
+            
+            // Reset car on R key
+            if (e.code === 'KeyR') {
+                window.dispatchEvent(new Event('resetCar'))
+            }
         })
-
-        window.addEventListener('keyup', (event) => {
-            this.keys[event.code] = false
+        
+        window.addEventListener('keyup', (e) => {
+            this.keys[e.code] = false
         })
-
-        // Mouse events for camera control
-        this.mouse = new THREE.Vector2()
-        this.isMouseDown = false
-
-        window.addEventListener('mousemove', (event) => {
-            this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-            this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+        
+        // Mouse events
+        window.addEventListener('mousedown', (e) => {
+            this.mousePressed = true
+            
+            // Hide central message on first interaction
+            if (!this.hasStarted) {
+                this.hasStarted = true
+                document.body.classList.add('started')
+            }
         })
-
-        window.addEventListener('mousedown', () => {
-            this.isMouseDown = true
-        })
-
+        
         window.addEventListener('mouseup', () => {
-            this.isMouseDown = false
+            this.mousePressed = false
         })
-
+        
+        window.addEventListener('mousemove', (e) => {
+            if (this.mousePressed) {
+                // Camera rotation logic would go here
+                const sensitivity = 0.002
+                this.cameraOffset.x += e.movementX * sensitivity
+                this.cameraOffset.y += e.movementY * sensitivity
+                this.cameraOffset.y = Math.max(-Math.PI/4, Math.min(Math.PI/4, this.cameraOffset.y))
+            }
+        })
+        
         // Touch events for mobile
-        this.setupTouchControls()
-    }
-
-    setupTouchControls() {
-        let touchStartX = 0
-        let touchStartY = 0
-
-        window.addEventListener('touchstart', (event) => {
-            const touch = event.touches[0]
-            touchStartX = touch.clientX
-            touchStartY = touch.clientY
-        })
-
-        window.addEventListener('touchmove', (event) => {
-            event.preventDefault()
-            const touch = event.touches[0]
-            const deltaX = touch.clientX - touchStartX
-            const deltaY = touch.clientY - touchStartY
-
-            // Simple touch steering
-            if (Math.abs(deltaX) > 50) {
-                this.keys['ArrowLeft'] = deltaX < 0
-                this.keys['ArrowRight'] = deltaX > 0
+        window.addEventListener('touchstart', () => {
+            if (!this.hasStarted) {
+                this.hasStarted = true
+                document.body.classList.add('started')
             }
-
-            if (deltaY < -50) {
-                this.keys['ArrowUp'] = true
-            } else if (deltaY > 50) {
-                this.keys['ArrowDown'] = true
-            }
-        })
-
-        window.addEventListener('touchend', () => {
-            this.keys['ArrowLeft'] = false
-            this.keys['ArrowRight'] = false
-            this.keys['ArrowUp'] = false
-            this.keys['ArrowDown'] = false
         })
     }
 
@@ -212,10 +201,10 @@ class Experience {
     }
 
     updateCamera() {
-        if (this.car && this.car.mesh) {
+        if (this.car && this.car.group) {
             // Get car position and rotation
-            const carPosition = this.car.mesh.position
-            const carRotation = this.car.mesh.rotation
+            const carPosition = this.car.group.position
+            const carRotation = this.car.group.rotation
 
             // Calculate camera position behind and above the car
             const cameraOffset = new THREE.Vector3(0, 8, 15)
